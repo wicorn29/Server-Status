@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Server Status Monitor</title>
+<style>
+  body {
+    background: #0a0a0a;
+    color: #f0f0f0;
+    font-family: monospace;
+    padding: 20px;
+    margin: 0;
+  }
+
+  h1 {
+    text-align: center;
+    color: #5fd75f;
+    font-size: 1.8em;
+    margin-top: 0;
+    display: inline-block;
+  }
+
+  /* ℹ️ Info button */
+  #infoButton {
+    background: none;
+    border: 1px solid #5fd75f;
+    color: #5fd75f;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 1em;
+    line-height: 22px;
+    text-align: center;
+    cursor: pointer;
+    margin-left: 8px;
+  }
+  #infoButton:hover {
+    background: #5fd75f;
+    color: #0a0a0a;
+  }
+
+  /* Info box (hidden by default) */
+  #infoBox {
+    display: none;
+    background: #141414;
+    border: 1px solid #5fd75f;
+    color: #e0e0e0;
+    padding: 14px 16px;
+    border-radius: 6px;
+    max-width: 900px;
+    margin: 15px auto 25px auto;
+    font-size: 0.95em;
+    line-height: 1.5em;
+    text-align: left;
+  }
+
+  #infoBox b {
+    color: #5fd75f;
+  }
+
+  /* 📋 Table styling */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1em;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  th, td {
+    border: 1px solid #333;
+    padding: 8px;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  th {
+    background: #111;
+    color: #ddd;
+    font-weight: bold;
+  }
+
+  .online { color: #00ff5f; }
+  .offline { color: #ff5f5f; }
+  .checking { color: #ffd75f; }
+
+  .subdomain td:first-child {
+    padding-left: 32px;
+    color: #ccc;
+  }
+
+  /* ⚠️ Warning button */
+  .warn-btn {
+    background: none;
+    border: 1px solid #ff5f5f;
+    color: #ff5f5f;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 0.9em;
+    line-height: 18px;
+    text-align: center;
+    cursor: pointer;
+    margin-left: 6px;
+  }
+  .warn-btn:hover {
+    background: #ff5f5f;
+    color: #0a0a0a;
+  }
+
+  /* Warning message popup */
+  .warn-message {
+    display: none;
+    background: #220000;
+    border: 1px solid #ff5f5f;
+    color: #ffaaaa;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    line-height: 1.4em;
+    margin-top: 6px;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 2em;
+    font-size: 0.8em;
+    color: #666;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  @media (max-width: 600px) {
+    #infoButton {
+      width: 28px;
+      height: 28px;
+      font-size: 1.1em;
+      line-height: 26px;
+    }
+    #infoBox {
+      font-size: 0.9em;
+      padding: 12px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div style="text-align:center;">
+    <h1>Server Status Monitor</h1>
+    <button id="infoButton" title="More information">i</button>
+  </div>
+
+  <div id="infoBox">
+    ⚠️ <b>Information:</b><br>
+    This server status page runs entirely <b>client-side</b>. It only reflects whether <b>your current device and network</b> can reach Wicorn29 servers.<br><br>
+    For the most accurate results, open this page on <b>multiple devices</b> and on <b>different networks</b> (for example, mobile data and home Wi-Fi).  
+  </div>
+
+  <table id="statusTable">
+    <thead>
+      <tr>
+        <th>Domain / Subdomain</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="statusBody"></tbody>
+  </table>
+
+  <footer>Client-side only • No backend required</footer>
+
+<script>
+  // 🧩 Modular domain + subdomain structure
+  const servers = [
+    {
+      name: "wicorn29.net",
+      url: "https://wicorn29.net",
+      subs: [
+        { name: "System Core", url: "https://core.wicorn29.net" },
+        { name: "API Gateway", url: "https://api.wicorn29.net" },
+      ],
+    },
+    {
+      name: "tirros.net",
+      url: "https://tirros.net",
+      subs: [
+        { name: "Dashboard", url: "https://dash.tirros.net" },
+        { name: "Files", url: "https://files.tirros.net" },
+      ],
+    },
+  ];
+
+  const statusBody = document.getElementById("statusBody");
+
+  function createRow(name, statusClass, statusText, isSub = false, warningText = null) {
+    const tr = document.createElement("tr");
+    if (isSub) tr.classList.add("subdomain");
+
+    // Build cell content
+    const domainCell = document.createElement("td");
+    domainCell.textContent = name;
+
+    const statusCell = document.createElement("td");
+    statusCell.className = statusClass;
+    statusCell.textContent = statusText;
+
+    // If there’s a warning, add button + message
+    if (warningText) {
+      const warnBtn = document.createElement("button");
+      warnBtn.className = "warn-btn";
+      warnBtn.textContent = "!";
+      warnBtn.title = "Show issue details";
+
+      const warnMsg = document.createElement("div");
+      warnMsg.className = "warn-message";
+      warnMsg.textContent = warningText;
+
+      warnBtn.addEventListener("click", () => {
+        warnMsg.style.display = warnMsg.style.display === "block" ? "none" : "block";
+      });
+
+      statusCell.appendChild(warnBtn);
+      statusCell.appendChild(warnMsg);
+    }
+
+    tr.appendChild(domainCell);
+    tr.appendChild(statusCell);
+    return tr;
+  }
+
+  async function checkServer(name, url, isSub = false) {
+    const row = createRow(name, "checking", "Checking...", isSub);
+    statusBody.appendChild(row);
+
+    try {
+      // Attempt to reach the server
+      await fetch(url, { method: "HEAD", mode: "no-cors" });
+      row.children[1].textContent = "Online";
+      row.children[1].className = "online";
+    } catch (err) {
+      const reason = "This server could not be reached from your current device or network.";
+      const newRow = createRow(name, "offline", "Offline", isSub, reason);
+      statusBody.replaceChild(newRow, row);
+    }
+  }
+
+  async function runChecks() {
+    statusBody.innerHTML = "";
+    for (const domain of servers) {
+      await checkServer(domain.name, domain.url);
+      if (domain.subs && domain.subs.length > 0) {
+        for (const sub of domain.subs) {
+          await checkServer(`${sub.name} → ${sub.url}`, sub.url, true);
+        }
+      }
+    }
+  }
+
+  runChecks();
+
+  // ℹ️ Info button toggle
+  const infoButton = document.getElementById("infoButton");
+  const infoBox = document.getElementById("infoBox");
+  infoButton.addEventListener("click", () => {
+    infoBox.style.display = infoBox.style.display === "block" ? "none" : "block";
+  });
+</script>
+</body>
+</html>
