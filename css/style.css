@@ -1,0 +1,159 @@
+/* ===== Body and headings ===== */
+body {
+    background: #f5f5f5;
+    color: #000;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    margin: 0;
+}
+
+h1 {
+    text-align: center;
+    color: #005500;
+    font-size: 1.8em;
+    margin-top: 0;
+}
+
+/* ===== Top buttons ===== */
+.top-buttons {
+    text-align: center;
+    margin: 10px 0;
+}
+
+.btn {
+    padding: 4px 10px;
+    margin: 0 5px;
+    cursor: pointer;
+    border: 2px outset #ccc;
+    background: #eee;
+    color: #000;
+    font-size: 0.9em;
+}
+
+.btn:hover {
+    background: #ddd;
+}
+
+/* ===== Info box ===== */
+#infoBox {
+    display: none;
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 10px auto;
+    max-width: 900px;
+    font-size: 0.9em;
+    line-height: 1.4em;
+}
+
+/* ===== Table ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    max-width: 900px;
+    margin: 10px auto;
+}
+
+th, td {
+    border: 1px solid #aaa;
+    padding: 6px 10px;
+    text-align: left;
+}
+
+th {
+    background: #ddd;
+    font-weight: bold;
+}
+
+.subdomain td:first-child {
+    padding-left: 20px;
+}
+
+/* ===== Status colors ===== */
+.online { color: green; }
+.offline { color: red; }
+.checking { color: orange; }
+
+/* ===== Refresh button ===== */
+#refreshBtn {
+    float: right;
+    cursor: pointer;
+    padding: 2px 6px;
+    border: 2px outset #ccc;
+    background: #eee;
+    color: #000;
+    font-size: 0.85em;
+    position: relative;
+}
+
+#refreshBtn:hover { background: #ddd; }
+
+/* disabled overlay pattern for refresh button */
+#refreshBtn.disabled::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: repeating-conic-gradient(black 0% 25%, transparent 0% 50%) 50%/10px 10px;
+    pointer-events: none;
+}
+
+/* ===== Advanced mode overlay ===== */
+#advBackdrop {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.3);
+    z-index: 900;
+}
+
+#advOverlay {
+    display: none;
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 600px;
+    background: #fff;
+    color: #000;
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-size: 0.9em;
+    z-index: 1000;
+}
+
+#advOverlay h2 {
+    margin-top: 0;
+    font-size: 1.2em;
+}
+
+#advOverlay button {
+    float: right;
+    cursor: pointer;
+    padding: 2px 6px;
+    border: 2px outset #ccc;
+    background: #eee;
+    color: #000;
+}
+
+#advOverlay button:hover { background: #ddd; }
+
+/* ===== Footer ===== */
+footer {
+    text-align: center;
+    margin-top: 2em;
+    font-size: 0.8em;
+    color: #666;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+footer a {
+    color: #005500;
+    text-decoration: none;
+}
+
+footer a:hover { text-decoration: underline; }
